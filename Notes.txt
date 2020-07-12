@@ -1,0 +1,7 @@
+https://blog.pusher.com/ecommerce-laravel-vue-part-1/
+ $ php artisan passport:install
+ 
+Multi Language API Response Messages In Laravel
+https://medium.com/teknomuslim/multi-language-api-response-messages-in-laravel-5c9029a32e5c
+
+https://medium.com/@lalrinfela/laravel-with-quasar-spa-7b298024f106
