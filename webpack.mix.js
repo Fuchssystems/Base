@@ -17,6 +17,6 @@ const mix = require('laravel-mix');
 
 // from: https://medium.com/@lalrinfela/laravel-with-quasar-spa-7b298024f106
 mix
-  .copy('spa/index.html', 'resources/views/app.blade.php')
-  .copyDirectory('spa', 'public');
+  .copy('../../Q Base/dist/spa/index.html', 'resources/views/app.blade.php')
+  .copyDirectory('../../Q Base/dist/spa', 'public');
   
