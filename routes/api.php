@@ -17,6 +17,7 @@ Route::group(['middleware' => ['cors']], function () {
   Route::put('login', 'UserController@login');
   Route::put('register', 'UserController@register');
   Route::put('createWebuser', 'UserController@createWebuser');
+  Route::patch('userPreferences','UserController@updatePreferencesUnauthorized');
 });
 Route::group(['middleware' => ['cors', 'auth:api']], function () {
   Route::get('users/{user}','UserController@show');

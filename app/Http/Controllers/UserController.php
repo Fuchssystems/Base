@@ -83,10 +83,8 @@ class UserController extends Controller
         $fields = $request->input('fields');
 
         $fields_user = [];
-        // $fields is an array of table names. User language preference is passed as array of fields and not as sub-array
-        isset($fields['user']) ? $fields_user = $fields['user'] : $fields_user = $fields;
+        if (isset($fields['user'])) $fields_user = $fields['user'];
         $validator = Validator::make($fields_user, [
-          'language' => 'sometimes',
           'email' => [
             'sometimes',
             'required',
@@ -155,6 +153,28 @@ class UserController extends Controller
           'user' => $user,
           'token' => $token,
       ]);
+    }
+
+    // update user preferences - authorization not required
+    public function updatePreferencesUnauthorized(Request $request)
+    {
+      $fields = $request->input('fields');
+
+      $fields_user = [];
+      $fields_user = $fields['user'];
+      $validator = Validator::make($fields_user, [
+        'id' => 'required',
+        'language' => 'sometimes',
+      ]);
+      if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 401);
+      }
+
+      $user = User::find($fields_user['id']);
+      if($user) {
+        $user->fill($fields_user);
+        $user->save();
+      }
     }
 
     public function delete(Request $request)
