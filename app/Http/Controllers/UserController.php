@@ -83,8 +83,10 @@ class UserController extends Controller
         $fields = $request->input('fields');
 
         $fields_user = [];
-        if (isset($fields['user'])) $fields_user = $fields['user'];
+        // $fields is an array of table names. User language preference is passed as array of fields and not as sub-array
+        isset($fields['user']) ? $fields_user = $fields['user'] : $fields_user = $fields;
         $validator = Validator::make($fields_user, [
+          'language' => 'sometimes',
           'email' => [
             'sometimes',
             'required',
