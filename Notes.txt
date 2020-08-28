@@ -10,3 +10,5 @@ https installieren:
 frontend: backendurl: https://fuchs.computer
 backend: .env: APP_URL=https://fuchs.computer
 laravel-forge server neu starten nach letsencrypt
+
+ssh forge@46.101.236.240 -i ~/.ssh/laravel-forge-base

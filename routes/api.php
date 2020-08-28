@@ -29,7 +29,9 @@ Route::group(['middleware' => ['cors', 'auth:api']], function () {
   Route::put('deleteFile', 'FileController@deleteFile');
   Route::put('deleteFiles', 'FileController@deleteFiles');
   Route::put('changeFileSortOrder', 'FileController@changeFileSortOrder');
-
+  Route::put('getUserPayments', 'PaymentController@getUserPayments');
+  Route::put('newUserPayment', 'PaymentController@newUserPayment');
+  
   Route::put('test','UserController@test');
 });
 

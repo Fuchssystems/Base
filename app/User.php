@@ -39,4 +39,10 @@ class User extends Authenticatable
     {
       return $this->hasOne('App\Profile', 'id', 'active_profile_id');
     }
+
+    public function payments()
+    {
+      return $this->hasMany('App\Payment')->whereIn('transaction_status', ['COMPLETED'])->orderBy('received_at_dateTime', 'DESC');
+    }
+
 }
