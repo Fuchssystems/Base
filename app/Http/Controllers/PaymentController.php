@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\User;
-use App\Payment;
+use App\Models\User;
+use App\Models\Payment;
 
 use Illuminate\Http\Request;
 

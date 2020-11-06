@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\User;
-use App\Profile;
+use App\Models\User;
+use App\Models\Profile;
 use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;

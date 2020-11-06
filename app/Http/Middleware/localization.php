@@ -1,9 +1,9 @@
 <?php
-# https://medium.com/teknomuslim/multi-language-api-response-messages-in-laravel-5c9029a32e5c
 
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Request;
 
 class localization
 {
@@ -14,7 +14,7 @@ class localization
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         // Check header request and determine localizaton
         $local = ($request->hasHeader('X-localization')) ? $request->header('X-localization') : 'en';

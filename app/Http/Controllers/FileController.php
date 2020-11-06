@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\File;
-use App\Profile;
+use App\Models\File;
+use App\Models\Profile;
 use Validator;
 use Illuminate\Http\Request;
 
