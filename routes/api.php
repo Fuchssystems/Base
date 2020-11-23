@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
 
 Route::group(['middleware' => []], function () {
   Route::put('login', [UserController::class, 'login']);
@@ -36,6 +37,7 @@ Route::group(['middleware' => ['auth:api']], function () {
   Route::put('changeFileSortOrder', [FileController::class, 'changeFileSortOrder']);
   Route::put('getUserPayments', [PaymentController::class, 'getUserPayments']);
   Route::put('newUserPayment', [PaymentController::class, 'newUserPayment']);
+  Route::put('chatProfileSearch', [ProfileController::class, 'chatProfileSearch']);
   
   Route::put('test',[UserController::class, 'test']);
 });

@@ -66,3 +66,38 @@ PUSHER_APP_CLUSTER=mt1
 
 MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
 MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+https://gist.github.com/JanusHelkjaer/e857c7cc25701a776fdbe973e07f95a1
+cd /home/forge/dev-mindmill.mm-beta.dk
+git fetch --all
+git reset --hard origin/master
+git pull origin master
+composer install --no-interaction --prefer-dist --optimize-autoloader
+echo "" | sudo -S service php7.0-fpm reload
+
+if [ -f artisan ]
+then
+    php artisan migrate --force
+fi
+
+Original Deploy Script:
+cd /home/forge/fuchs.computer
+git pull origin master
+$FORGE_COMPOSER install --no-interaction --prefer-dist --optimize-autoloader
+
+( flock -w 10 9 || exit 1
+    echo 'Restarting FPM...'; sudo -S service $FORGE_PHP_FPM reload ) 9>/tmp/fpmlock
+
+if [ -f artisan ]; then
+    $FORGE_PHP artisan migrate --force
+fi
+
+****************
+google maps API
+Konto tirebiz.biz
+key:
+AIzaSyDHuD5Xnl2ts2V9g8rmqiZb1cEmgU7kero
+
+****************
+environment variables
+https://medium.com/@ninovillaflor1997/laravel-environment-env-variables-into-controller-class-86f854f869b3

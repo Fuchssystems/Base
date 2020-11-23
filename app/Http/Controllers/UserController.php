@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\helpers\localization;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Carbon;
+use DateTime;
 
 class UserController extends Controller
 {
@@ -107,11 +109,22 @@ class UserController extends Controller
         // table profiles
         $fields_profile = [];
         if (isset($fields['profile'])) $fields_profile = $fields['profile'];
+        $birthdayAllowedFrom = Carbon::today()->subYears(12)->toDateString();
+        $birthdayAllowedTo = Carbon::today()->subYears(100)->toDateString();
         $validator = Validator::make($fields_profile, [
           'name' => 'sometimes|required|min:2|max:50',
           'country_code_iso_3166_alpha_2' => 'sometimes|required|size:2',
           'areacode' => 'sometimes|required|min:2|max:20',
           'city' => 'sometimes|required|min:2|max:20',
+          'birthday' => [
+            'sometimes', 'required', 'date',
+            function ($attribute, $value, $fail) use ($birthdayAllowedFrom, $birthdayAllowedTo) {
+              if ($value > $birthdayAllowedFrom || $value < $birthdayAllowedTo) {
+                $fail('The birthday must result in an age between 12 and 100 years.');
+              }
+            },
+          ],
+          'gender_male_female_diverse_null' => ['sometimes', 'required', Rule::in(['male', 'female', 'diverse'])],
         ]);
         if ($validator->fails()) {
           return response()->json(['error' => $validator->errors()], 401);
@@ -119,6 +132,16 @@ class UserController extends Controller
         $profile = Profile::firstOrNew(['id' => $user->active_profile_id]);
         $profile->user_id = $user->id;
         $profile->fill($fields_profile);
+
+        // update geocoordinates if adress changed
+        if (($profile->country_code_iso_3166_alpha_2 || $profile->getOriginal('country_code_iso_3166_alpha_2'))
+          || ($profile->areacode || $profile->getOriginal('areacode'))
+          || ($profile->city || $profile->getOriginal('city'))) {
+            $adress = $profile->areacode . ' ' . $profile->city
+              . ', ' . $profile->country_code_iso_3166_alpha_2;
+            // setter of field latitude also sets longitude
+            $profile->longitude = $adress;
+        }
 
         $profile->save();
         if (!$user->active_profile_id) $user->active_profile_id = $profile->id;
