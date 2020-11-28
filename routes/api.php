@@ -41,3 +41,4 @@ Route::group(['middleware' => ['auth:api']], function () {
   
   Route::put('test',[UserController::class, 'test']);
 });
+
