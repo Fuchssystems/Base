@@ -30,7 +30,6 @@ Route::group(['middleware' => ['auth:api']], function () {
   Route::patch('user',[UserController::class, 'update']);
   Route::put('deleteWebuser',[UserController::class, 'delete']);
   Route::put('addFileProfile', [FileController::class, 'addPicture']);
-  Route::put('getAllProfileFiles', [FileController::class, 'getAllProfileFiles']);
   Route::put('loadFile', [FileController::class, 'loadFile']);
   Route::put('deleteFile', [FileController::class, 'deleteFile']);
   Route::put('deleteFiles', [FileController::class, 'deleteFiles']);
@@ -41,4 +40,7 @@ Route::group(['middleware' => ['auth:api']], function () {
   
   Route::put('test',[UserController::class, 'test']);
 });
-
+// fetching of profile images allowed 600 times per minute (100 ms)
+Route::group(['middleware' => ['auth:api', 'throttle: 600']], function () {
+  Route::put('getAllProfileFiles', [FileController::class, 'getAllProfileFiles']);
+});
