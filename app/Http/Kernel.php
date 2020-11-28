@@ -40,7 +40,7 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            // 'throttle:api', commented out for browsing profile pictures in carousel
+            // 'throttle:api', test commented out for browsing profile pictures in carousel
             'localization', // https://medium.com/teknomuslim/multi-language-api-response-messages-in-laravel-5c9029a32e5c
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
