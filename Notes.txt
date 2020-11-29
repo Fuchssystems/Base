@@ -101,3 +101,7 @@ AIzaSyDHuD5Xnl2ts2V9g8rmqiZb1cEmgU7kero
 ****************
 environment variables
 https://medium.com/@ninovillaflor1997/laravel-environment-env-variables-into-controller-class-86f854f869b3
+
+******************
+Pagination of array:
+https://laracasts.com/discuss/channels/laravel/how-to-use-lengthawarepaginator-manual-paginator

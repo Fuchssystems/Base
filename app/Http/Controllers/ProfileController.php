@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Auth;
 use App\Models\Profile;
 use Validator;
-use App\lib\Coordinates;
+use Illuminate\Pagination\Paginator;
 
 class ProfileController extends Controller
 {
@@ -23,6 +23,7 @@ class ProfileController extends Controller
         'minAge' => 'sometimes|integer|min:12|max:90',
         'maxAge' => 'sometimes|integer|min:12|max:90',
         'distance' => 'sometimes|integer|min:0|max:805',
+        'queryPage' => 'required|integer|min:1',
       ]);
 
       if ($validator->fails()) {
@@ -67,26 +68,10 @@ class ProfileController extends Controller
         $query->whereRaw("111.045*haversine(latitude, longitude, '{$activeLatitude}', '{$activeLongitude}') <= " . $data['distance']);
       }
 
-      $query->limit(100);
-      $profiles = $query->get()->toArray();
-
-      // add column distance to active profile of authorized user
-      foreach($profiles as $index => &$profile) {
-        if ($activeLatitude && $activeLongitude
-          && $profile['latitude'] && $profile['longitude']) {
-            $profiles[$index]['distance'] = Coordinates::haversineGreatCircleDistance(
-              $activeLatitude, $activeLongitude, $profile['latitude'], $profile['longitude']);
-        }
-      }
-      unset ($profile);
-
-      // if(isset($data['distance'])) {
-      //   $maxDistance = $data['distance'];
-      //   $profiles = array_filter($profiles, function ($profile) use ($maxDistance) {
-      //     return $profile['distance'] <= $maxDistance;
-      //   });
-      //   $profiles=array_values($profiles);
-      // }
+      Paginator::currentPageResolver(function() use ($data) {
+        return $data['queryPage'];
+      });
+      $profiles = $query->paginate(100);
 
       return response()->json([
         'profiles' => $profiles,

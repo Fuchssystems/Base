@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 // use App\lib\GoogleAPI;
 use Faker\Factory;
+use Auth;
+use App\lib\Coordinates;
 
 class Profile extends Model
 {
   use HasFactory, SoftDeletes;
 
-  protected $appends = ['ageYears'];
+  protected $appends = ['ageYears', 'distance'];
   protected $guarded = [];
 
   protected static function boot ()
@@ -28,6 +30,19 @@ class Profile extends Model
   public function getAgeYearsAttribute()
   {
       return Carbon::parse($this->birthday)->age;
+  }
+
+  public function getDistanceAttribute()
+  {
+      $activeUserProfile = Auth::user()->activeProfile;
+      $activeLatitude = $activeUserProfile->latitude;
+      $activeLongitude = $activeUserProfile->longitude;
+      if ($activeLatitude && $activeLongitude
+      && $this->latitude && $this->longitude) {
+        return Coordinates::haversineGreatCircleDistance(
+          $activeLatitude, $activeLongitude, $this->latitude, $this->longitude);
+      }
+      return null;
   }
 
   public function profileImage()
