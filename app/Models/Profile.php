@@ -23,7 +23,11 @@ class Profile extends Model
       parent::boot();
       
       self::deleting(function (Profile $profile) {
-        if($profile->profileImage) $profile->profileImage->delete();
+        $profile->sessions()->delete();
+        if($profile->profileImage) {
+          $profile->profileImage->delete();
+        }
+        $profile->profileImagesWithoutProfileImage()->delete();
       });
   }
 
@@ -34,7 +38,11 @@ class Profile extends Model
 
   public function getDistanceAttribute()
   {
-      $activeUserProfile = Auth::user()->activeProfile;
+      $authorizedUser = Auth::user(); // on register no user authorized
+      if (is_null($authorizedUser)) {
+        return null;
+      }
+      $activeUserProfile = $authorizedUser->activeProfile;
       $activeLatitude = $activeUserProfile->latitude;
       $activeLongitude = $activeUserProfile->longitude;
       if ($activeLatitude && $activeLongitude
@@ -43,6 +51,14 @@ class Profile extends Model
           $activeLatitude, $activeLongitude, $this->latitude, $this->longitude);
       }
       return null;
+  }
+
+  public function getOnlineAttribute()
+  {
+    if (!$this->attributes['online']) {
+      return false;
+    }
+    return ($this->attributes['last_online'] >= Carbon::today()->subSeconds(150)->toDateTimeString());
   }
 
   public function profileImage()
@@ -74,5 +90,10 @@ class Profile extends Model
     // $latitudeLongitude = GoogleAPI::getLongitudeLatidudeFromAdress($address);
     // $this->attributes['latitude'] = strtolower($latitudeLongitude->latitude);
     // $this->attributes['longitude'] = strtolower($latitudeLongitude->longitude);
+  }
+
+  public function sessions()
+  {
+    return $this->hasMany('App\Models\Session');
   }
 }

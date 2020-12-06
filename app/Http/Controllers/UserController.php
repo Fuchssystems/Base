@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use App\Models\User;
 use App\Models\Profile;
+use App\Models\Session;
 use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -23,10 +24,22 @@ class UserController extends Controller
         if (Auth::attempt($request->only(['email', 'password']))) {
             $user = Auth::user();
 
+            $activeProfile = $user->activeProfile;
+            $activeProfile->online = true;
+            $activeProfile->last_online = Carbon::now()->toDateTimeString();
+            $activeProfile->save();
+
+            $session = Session::create([
+              'profile_id' => $activeProfile->id,
+              'last_online' => $activeProfile->last_online,
+            ]);
+            $session->save();
+
             $status = 200;
             $response = [
                 'user' => Auth::user(),
                 'token' => Auth::user()->createToken('bigStore')->accessToken,
+                'session' => $session,
                 'profiles' => Auth::user()->profiles,
                 'file' => $user->activeProfile->profileImage,
             ];
@@ -62,16 +75,77 @@ class UserController extends Controller
         $profile = new Profile;
         $profile->user_id = $user->id;
         $profile->name = $user->name;
+
+        $profile->online = true;
+        $profile->last_online = Carbon::now()->toDateTimeString();
+
         $profile->save();
 
         $user->active_profile_id = $profile->id;        
         $user->save();
 
+        $session = Session::create([
+          'profile_id' => $profile->id,
+          'last_online' => $profile->last_online,
+        ]);
+        $session->save();
+
         return response()->json([
             'user' => $user,
             'token' => $token,
+            'session' => $session,
             'profiles' => $user->profiles,
         ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+
+        $activeProfile = $user->activeProfile;
+        $activeProfile->online = false;
+        $activeProfile->last_online = Carbon::now()->toDateTimeString();
+        $activeProfile->save();
+
+        $status = 200;
+
+        try {
+          return response()->json($status);
+        } finally {
+          // remove session
+          $sessionId = $request->input('sessionId');
+          if (!is_null($sessionId)) {
+            $session = Session::find($sessionId);
+            if (!is_null($session)) {
+              $session->delete();
+            }
+          }
+        }
+    }
+
+    // user still alive - update online status of active profile
+    public function alive(Request $request)
+    {
+        $user = Auth::user();
+
+        $activeProfile = $user->activeProfile;
+        if ($activeProfile->online) { // prevent call after lo
+          $activeProfile->last_online = Carbon::now()->toDateTimeString();
+          $activeProfile->save();
+        }
+
+        $sessionId = $request->input('sessionId');
+        if (!is_null($sessionId)) {
+          $session = Session::find($sessionId);
+          if (!is_null($session)) {
+            $session->last_online = Carbon::now()->toDateTimeString();
+            $session->save();
+          }
+        }
+
+        $status = 200;
+
+        return response()->json($status);
     }
 
     public function show(User $user)

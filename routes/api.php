@@ -26,9 +26,11 @@ Route::group(['middleware' => []], function () {
   Route::patch('userPreferences',[UserController::class, 'updatePreferencesUnauthorized']);
 });
 Route::group(['middleware' => ['auth:api']], function () {
+  Route::put('alive', [UserController::class, 'alive']);
   Route::get('users/{user}',[UserController::class, 'show']);
   Route::patch('user',[UserController::class, 'update']);
   Route::put('deleteWebuser',[UserController::class, 'delete']);
+  Route::put('logout', [UserController::class, 'logout']);
   Route::put('addFileProfile', [FileController::class, 'addPicture']);
   Route::put('getAllProfileFiles', [FileController::class, 'getAllProfileFiles']);
   Route::put('loadFile', [FileController::class, 'loadFile']);

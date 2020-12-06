@@ -68,13 +68,22 @@ class ProfileController extends Controller
         $query->whereRaw("111.045*haversine(latitude, longitude, '{$activeLatitude}', '{$activeLongitude}') <= " . $data['distance']);
       }
 
+      $query->orderBy('name', 'asc');
+
       Paginator::currentPageResolver(function() use ($data) {
         return $data['queryPage'];
       });
       $profiles = $query->paginate(100);
 
-      return response()->json([
-        'profiles' => $profiles,
-      ]);
+      try {
+        return response()->json([
+          'profiles' => $profiles,
+        ]);
+      } finally {
+        // update CreateTokenWatchedProfilesTable
+        // for Notifcations of loged in status via Websockets
+        // on logout and login
+        // $deletedWatchedProfiles = Token_watched_profiles::where('token_id', $activeUserProfile->id)->delete();
+      }
     }
 }
