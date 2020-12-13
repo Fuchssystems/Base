@@ -105,3 +105,14 @@ https://medium.com/@ninovillaflor1997/laravel-environment-env-variables-into-con
 ******************
 Pagination of array:
 https://laracasts.com/discuss/channels/laravel/how-to-use-lengthawarepaginator-manual-paginator
+
+******************
+https://pusher.com/tutorials/chat-laravel
+
+****************
+Laradock /artisan schedule:run
+https://github.com/laradock/laradock/issues/1318
+It was resolved by modifying the path to artisan command in crontab and rebuilding workspace container.
+laradock/workspace/crontab/laradock
+* * * * * laradock php /var/www/project-1/artisan schedule:run >> /dev/null 2>&1
+* * * * * laradock php /var/www/project-2/artisan schedule:run >> /dev/null 2>&1

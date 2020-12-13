@@ -28,6 +28,7 @@ class Profile extends Model
           $profile->profileImage->delete();
         }
         $profile->profileImagesWithoutProfileImage()->delete();
+        $profile->relatedProfiles()->delete();
       });
   }
 
@@ -58,7 +59,7 @@ class Profile extends Model
     if (!$this->attributes['online']) {
       return false;
     }
-    return ($this->attributes['last_online'] >= Carbon::today()->subSeconds(150)->toDateTimeString());
+    return ($this->attributes['last_online'] >= Carbon::now()->subSeconds(150)->toDateTimeString());
   }
 
   public function profileImage()
@@ -69,6 +70,11 @@ class Profile extends Model
   public function profileImagesWithoutProfileImage()
   {
       return $this->hasMany('App\Models\File')->where('id', '!=', $this->profileImage_id)->orderBy('sort');
+  }
+
+  public function relatedProfiles()
+  {
+      return $this->hasMany('App\Models\ProfileRelation');
   }
 
   public function lastFileSortValue()

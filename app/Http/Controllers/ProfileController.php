@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 
 use Auth;
 use App\Models\Profile;
+use App\Models\ProfileRelation;
+use App\Models\Session;
+use App\Models\Session_watched_profiles;
+use Illuminate\Support\Carbon;
 use Validator;
 use Illuminate\Pagination\Paginator;
 
@@ -14,9 +18,12 @@ class ProfileController extends Controller
     // get chat profiles for passed search filter
     public function chatProfileSearch(Request $request)
     {
+      $sessionId = $request->only(['sessionId'])['sessionId'];
       $requestFields = $request->only(['searchFilter']);
       $data = $requestFields['searchFilter'];
+      $data['sessionId'] = $sessionId;
       $validator = Validator::make($data, [
+        'sessionId' => 'required|integer',
         'name' => 'sometimes|max:255',
         'genders' => 'sometimes|array|min:1',
         'genders.' => 'sometimes|string|distinct|min:4', // genders: male, female, diverse
@@ -61,7 +68,10 @@ class ProfileController extends Controller
         }
       }
 
+      // exclude active profile
       $activeUserProfile = Auth::user()->activeProfile;
+      $query->where('id', '<>', $activeUserProfile->id);
+
       $activeLatitude = $activeUserProfile->latitude;
       $activeLongitude = $activeUserProfile->longitude;
       if(isset($data['distance'])) {
@@ -75,15 +85,46 @@ class ProfileController extends Controller
       });
       $profiles = $query->paginate(100);
 
-      try {
-        return response()->json([
-          'profiles' => $profiles,
-        ]);
-      } finally {
-        // update CreateTokenWatchedProfilesTable
+      // add fields is_contact, unread_messages_counter
+      $profiles->map(function ($profile) use ($activeUserProfile) {
+        $profile['is_contact'] = false;
+        $profile['unread_messages_counter'] = 0;
+        $index = ProfileRelation::make_index_profile_and_related($activeUserProfile->id, $profile->id);
+        $profileRelation = ProfileRelation::where('index_profile_and_related', $index)->first();
+        if ($profileRelation) {
+          $profile['is_contact'] = $profileRelation->is_contact;
+          $profile['unread_messages_counter'] = $profileRelation->unread_messages_counter;
+        }
+      });
+
+      dispatch(function () use ($profiles, $sessionId, $activeUserProfile) {
+        // update Session_watched_profiles table
         // for Notifcations of loged in status via Websockets
-        // on logout and login
-        // $deletedWatchedProfiles = Token_watched_profiles::where('token_id', $activeUserProfile->id)->delete();
-      }
+
+        // delete Session_watched_profiles not logged more than 3 minutes
+        $dateTimeOutdated = Carbon::now()->subSeconds(180)->toDateTimeString();
+        $watchedProfilesToDelete = Session::where('last_online', '<', $dateTimeOutdated);
+        $watchedProfilesToDelete->delete();
+
+        // delete old Session_watched_profiles of this session
+        $session = Session::find($sessionId);
+        if (!is_null($session)) {
+          $session->watchedProfiles()->delete();
+        }
+
+        // create Session_watched_profiles records
+        $profiles->each(function ($profile) use ($sessionId, $activeUserProfile){
+          $watchedProfile = Session_watched_profiles::create([
+            'session_id' => $sessionId,
+            'profile_id_watcher' => $activeUserProfile->id,
+            'profile_id_observed' => $profile->id,
+          ]);
+          $watchedProfile->save();
+        });
+      })->afterResponse();
+
+      return response()->json([
+        'profiles' => $profiles,
+      ]);
     }
 }

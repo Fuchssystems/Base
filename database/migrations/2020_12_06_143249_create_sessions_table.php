@@ -18,6 +18,7 @@ class CreateSessionsTable extends Migration
             $table->bigInteger('profile_id');
             $table->index('profile_id');
             $table->dateTime('last_online')->nullable(true);
+            $table->index('last_online');
 
             $table->timestamps();
         });

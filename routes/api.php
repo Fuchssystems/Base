@@ -18,6 +18,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ChatmessageController;
 
 Route::group(['middleware' => []], function () {
   Route::put('login', [UserController::class, 'login']);
@@ -40,6 +41,8 @@ Route::group(['middleware' => ['auth:api']], function () {
   Route::put('getUserPayments', [PaymentController::class, 'getUserPayments']);
   Route::put('newUserPayment', [PaymentController::class, 'newUserPayment']);
   Route::put('chatProfileSearch', [ProfileController::class, 'chatProfileSearch']);
+  Route::put('chatmessagePost', [ChatmessageController::class, 'chatmessagePost']);
+  Route::put('getProfileChatmessages', [ChatmessageController::class, 'getProfileChatmessages']);
   
   Route::put('test',[UserController::class, 'test']);
 });

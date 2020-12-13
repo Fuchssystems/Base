@@ -13,6 +13,7 @@ use App\helpers\localization;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
 use DateTime;
+use App\ownFunctionClasses\PusherMessages;
 
 class UserController extends Controller
 {
@@ -43,6 +44,10 @@ class UserController extends Controller
                 'profiles' => Auth::user()->profiles,
                 'file' => $user->activeProfile->profileImage,
             ];
+
+            dispatch(function () use ($activeProfile) {
+              PusherMessages::broadcastOnlineStatus($activeProfile->id, true);
+            })->afterResponse();
         }
 
         return response()->json($response, $status);
@@ -109,18 +114,20 @@ class UserController extends Controller
 
         $status = 200;
 
-        try {
-          return response()->json($status);
-        } finally {
+        $sessionId = $request->input('sessionId');
+        dispatch(function () use ($activeProfile, $sessionId) {
+          PusherMessages::broadcastOnlineStatus($activeProfile->id, false);
+
           // remove session
-          $sessionId = $request->input('sessionId');
           if (!is_null($sessionId)) {
             $session = Session::find($sessionId);
             if (!is_null($session)) {
               $session->delete();
             }
           }
-        }
+        })->afterResponse();
+
+        return response()->json($status);
     }
 
     // user still alive - update online status of active profile
@@ -129,10 +136,9 @@ class UserController extends Controller
         $user = Auth::user();
 
         $activeProfile = $user->activeProfile;
-        if ($activeProfile->online) { // prevent call after lo
-          $activeProfile->last_online = Carbon::now()->toDateTimeString();
-          $activeProfile->save();
-        }
+        $activeProfile->online = true;
+        $activeProfile->last_online = Carbon::now()->toDateTimeString();
+        $activeProfile->save();
 
         $sessionId = $request->input('sessionId');
         if (!is_null($sessionId)) {
