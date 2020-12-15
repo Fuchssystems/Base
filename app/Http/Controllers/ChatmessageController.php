@@ -137,5 +137,43 @@ class ChatmessageController extends Controller
       'chatmessages' => $chatmessages,
       'profileRelation' => $profileRelation,
     ]);
- }     
+ }
+ 
+  // confirm 1 chatmessage read by receiver
+  public function confirmChatmessageRead(Request $request)
+  {
+    $data = $request->only(['chatMessageId']);
+
+    $validator = Validator::make($data, [
+      'chatMessageId' => 'required|integer',
+    ]);
+
+    if ($validator->fails()) {
+      return response()->json(['error' => $validator->errors()], 401);
+    }
+
+    // set read status of messages to read
+    $chatmessage = Chatmessage::find($data['chatMessageId']);
+    if ($chatmessage) {
+      $chatmessage->read = true;
+      $chatmessage->read_at = Carbon::now()->toDateTimeString();
+      $chatmessage->save();
+    }
+
+    // update profile unread messages counter
+    $index = ProfileRelation::make_index_profile_and_related($chatmessage->profile_id_receiver, $chatmessage->profile_id_sender);
+    $profileRelation = ProfileRelation::where('index_profile_and_related', $index)->first();
+    if ($profileRelation) {
+      $profileRelation->unread_messages_counter--;
+      if ($profileRelation->unread_messages_counter <= 0) {
+        $profileRelation->has_unread_messages = false;
+      }
+      $profileRelation->save();
+    }
+
+    // return updated chatmessages
+    return response()->json([
+      'chatmessage' => $chatmessage,
+    ]);
+  }
 }

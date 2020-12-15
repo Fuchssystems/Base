@@ -29,7 +29,7 @@ class ProfileFactory extends Factory
             'country_code_iso_3166_alpha_2' => 'DE',
             'areacode' => $faker->postcode,
             'city' => $faker->city,
-            'birthday' => $faker->dateTimeBetween('-30 years', '-12 years'),
+            'birthday' => $faker->dateTimeBetween('-90 years', '-12 years'),
             'gender_male_female_diverse_null' => $faker->randomElement(['male','female','diverse']),
             'latitude' => $faker->latitude(47.27, 55.05),
             'longitude' => $faker->longitude(15.03, 5.87),

@@ -43,6 +43,8 @@ Route::group(['middleware' => ['auth:api']], function () {
   Route::put('chatProfileSearch', [ProfileController::class, 'chatProfileSearch']);
   Route::put('chatmessagePost', [ChatmessageController::class, 'chatmessagePost']);
   Route::put('getProfileChatmessages', [ChatmessageController::class, 'getProfileChatmessages']);
+  Route::put('confirmChatmessageRead', [ChatmessageController::class, 'confirmChatmessageRead']);
+  Route::put('updateProfileRelation', [ProfileRelationController::class, 'update']);
   
   Route::put('test',[UserController::class, 'test']);
 });
