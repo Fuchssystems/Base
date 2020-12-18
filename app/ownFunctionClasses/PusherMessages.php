@@ -11,8 +11,14 @@ use Illuminate\Support\Carbon;
 
 class PusherMessages
 {
+    // schedule deleteTimedOutSessions to be called by Console\Kernel.php
+    public function __invoke()
+    {
+      self::deleteTimedOutSessions();
+    }
 
     public static function deleteTimedOutSessions() {
+      var_dump('deleteTimedOutSessions');
       // delete Session_watchedProfiles not logged more than 3 minutes
       // scheduled
       $dateTimeOutdated = Carbon::now()->subSeconds(120)->toDateTimeString();
@@ -78,4 +84,14 @@ class PusherMessages
         }
       }
    }
+
+    // whisper message to online receiver
+    // to be replace by direct peer communication
+    public static function broadcastWhisper ($type, $profileIdSender, $profileIdReceiver) {
+      $message = (object) [
+        'type' => $type,
+        'profileId' => $profileIdSender,
+      ];
+      broadcast(new MessageToProfile($profileIdReceiver, $message));
+    }
 }

@@ -176,4 +176,28 @@ class ChatmessageController extends Controller
       'chatmessage' => $chatmessage,
     ]);
   }
+
+  // whisper profile to profile
+  // to be replaced with direct websocket communication
+  public function whisper(Request $request) {
+    $data = $request->only(['type', 'profileIdSender', 'profileIdReceiver']);
+
+    $validator = Validator::make($data, [
+      'type' => 'required|string',
+      'profileIdSender' => 'required|integer',
+      'profileIdReceiver' => 'required|integer',
+    ]);
+
+    if ($validator->fails()) {
+      return response()->json(['error' => $validator->errors()], 401);
+    }
+
+    dispatch(function () use ($data) {
+      PusherMessages::broadcastWhisper($data['type'], $data['profileIdSender'],
+        $data['profileIdReceiver'],
+      );
+    })->afterResponse();
+
+    return response()->json(null, 200);
+  }
 }

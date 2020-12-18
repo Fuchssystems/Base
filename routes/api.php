@@ -19,12 +19,14 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ChatmessageController;
+use App\Http\Controllers\ProfileRelationController;
 
 Route::group(['middleware' => []], function () {
   Route::put('login', [UserController::class, 'login']);
   Route::put('register', [UserController::class, 'register']);
   Route::put('createWebuser', [UserController::class, 'createWebuser']);
   Route::patch('userPreferences',[UserController::class, 'updatePreferencesUnauthorized']);
+  Route::put('whisper', [ChatmessageController::class, 'whisper']);
 });
 Route::group(['middleware' => ['auth:api']], function () {
   Route::put('alive', [UserController::class, 'alive']);
@@ -44,8 +46,6 @@ Route::group(['middleware' => ['auth:api']], function () {
   Route::put('chatmessagePost', [ChatmessageController::class, 'chatmessagePost']);
   Route::put('getProfileChatmessages', [ChatmessageController::class, 'getProfileChatmessages']);
   Route::put('confirmChatmessageRead', [ChatmessageController::class, 'confirmChatmessageRead']);
-  Route::put('updateProfileRelation', [ProfileRelationController::class, 'update']);
-  
-  Route::put('test',[UserController::class, 'test']);
+  Route::put('updateProfileRelation', [ProfileRelationController::class, 'update']);  
 });
 

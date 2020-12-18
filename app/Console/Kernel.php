@@ -26,9 +26,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(function () {
-          PusherMessages::deleteTimedOutSessions();
-        })->everyMinute();
+        $schedule->call(new PusherMessages)->everyMinute();
+        // $schedule->call(function () {
+        //   PusherMessages::deleteTimedOutSessions();
+        // })->everyMinute();
     }
 
     /**

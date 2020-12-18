@@ -303,9 +303,4 @@ class UserController extends Controller
         $user->delete();
         return response()->json($response, $status);
     }
-
-    public function test(Request $request)
-    {
-      return response()->json('Test respone');
-    }
 }

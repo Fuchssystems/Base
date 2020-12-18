@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
+// private chat channels "profile.id": no user authentication for now
+Broadcast::channel('profile.{id}', function ($user, $id) {
+  return true;
+});
+
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });

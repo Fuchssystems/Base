@@ -11,11 +11,9 @@ class ProfileRelationController extends Controller
 {
   public function update(Request $request)
   {
-      $fields = $request->input('fields');
+      $fields_profileRelation = $request->input('profileRelation');
 
-      $fields_profileRelation = [];
-      if (isset($fields['profileRelation'])) $fields_profileRelation = $fields['profileRelation'];
-      $validator = Validator::make($fields_user, [
+      $validator = Validator::make($fields_profileRelation, [
         'profile_id' => 'required|integer',
         'related_profile_id' => 'required|integer',
         'is_contact' => 'sometimes|boolean',
