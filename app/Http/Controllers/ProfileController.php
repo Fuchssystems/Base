@@ -11,6 +11,7 @@ use App\Models\Session;
 use App\Models\Session_watched_profiles;
 use Illuminate\Support\Carbon;
 use Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Pagination\Paginator;
 
 class ProfileController extends Controller
@@ -24,6 +25,7 @@ class ProfileController extends Controller
       $data['sessionId'] = $sessionId;
       $validator = Validator::make($data, [
         'sessionId' => 'required|integer',
+        'mode' => ['required', Rule::in(['profiles', 'contacts', 'messages'])],
         'name' => 'sometimes|max:255',
         'genders' => 'sometimes|array|min:1',
         'genders.' => 'sometimes|string|distinct|min:4', // genders: male, female, diverse
@@ -37,6 +39,7 @@ class ProfileController extends Controller
         return response()->json(['error' => $validator->errors()], 401);
       }
 
+      $activeUserProfile = Auth::user()->activeProfile;
       // $profiles = Profile::with(['profileImage'])->where('name', 'LIKE', '%'.$data['name'].'%')->limit(100)->get()->toArray();
       $query = Profile::with(['profileImage']);
       if (isset($data['name'])) {
@@ -45,31 +48,38 @@ class ProfileController extends Controller
         }
       }
 
-      // min und max age
-      if(isset($data['minAge']) && isset($data['maxAge'])) {
-        $minAgeBirthday = date('Y-m-d', strtotime('-' . $data['minAge'] . ' years'));
-        $maxAgeBirthday = date('Y-m-d', strtotime('-' . $data['maxAge'] . ' years'));
-        $query->whereBetween('birthday', [$maxAgeBirthday, $minAgeBirthday]);
-      }
-      elseif(isset($data['minAge'])) { // maxAge not set
-        $query->where('birthday', '<', date('Y-m-d', strtotime('-' . $data['minAge'] . ' years')));
-      }
-      elseif(isset($data['maxAge'])) { // minAge not set
-        $query->where('birthday', '>', date('Y-m-d', strtotime('-' . $data['maxAge'] . ' years')));
+      if ($data['mode'] === 'contacts') {
+        $query->whereHas('profileRelationsByOthers', function($q) use ($activeUserProfile) {
+          $q->where('profile_id', $activeUserProfile->id)->where('is_contact', '1');
+        });
       }
 
-      if(isset($data['genders'])) {
-        // query only if at least 1 gender not true
-        $gendersArray = $data['genders'];
-        if(!isset($gendersArray['male']) || !$gendersArray['male']
-          || !isset($gendersArray['female']) || !$gendersArray['female']
-          || !isset($gendersArray['diverse']) || !$gendersArray['diverse']) {
-            $query->whereIn('gender_male_female_diverse_null', $data['genders']);
+      if ($data['mode'] === 'profiles') {
+        // min und max age
+        if(isset($data['minAge']) && isset($data['maxAge'])) {
+          $minAgeBirthday = date('Y-m-d', strtotime('-' . $data['minAge'] . ' years'));
+          $maxAgeBirthday = date('Y-m-d', strtotime('-' . $data['maxAge'] . ' years'));
+          $query->whereBetween('birthday', [$maxAgeBirthday, $minAgeBirthday]);
+        }
+        elseif(isset($data['minAge'])) { // maxAge not set
+          $query->where('birthday', '<', date('Y-m-d', strtotime('-' . $data['minAge'] . ' years')));
+        }
+        elseif(isset($data['maxAge'])) { // minAge not set
+          $query->where('birthday', '>', date('Y-m-d', strtotime('-' . $data['maxAge'] . ' years')));
+        }
+
+        if(isset($data['genders'])) {
+          // query only if at least 1 gender not true
+          $gendersArray = $data['genders'];
+          if(!isset($gendersArray['male']) || !$gendersArray['male']
+            || !isset($gendersArray['female']) || !$gendersArray['female']
+            || !isset($gendersArray['diverse']) || !$gendersArray['diverse']) {
+              $query->whereIn('gender_male_female_diverse_null', $data['genders']);
+          }
         }
       }
 
       // exclude active profile
-      $activeUserProfile = Auth::user()->activeProfile;
       $query->where('id', '<>', $activeUserProfile->id);
 
       $activeLatitude = $activeUserProfile->latitude;

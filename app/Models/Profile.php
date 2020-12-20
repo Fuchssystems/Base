@@ -28,7 +28,7 @@ class Profile extends Model
           $profile->profileImage->delete();
         }
         $profile->profileImagesWithoutProfileImage()->delete();
-        $profile->relatedProfiles()->delete();
+        $profile->profileRelations()->delete();
       });
   }
 
@@ -72,9 +72,14 @@ class Profile extends Model
       return $this->hasMany('App\Models\File')->where('id', '!=', $this->profileImage_id)->orderBy('sort');
   }
 
-  public function relatedProfiles()
+  public function profileRelations()
   {
       return $this->hasMany('App\Models\ProfileRelation');
+  }
+
+  public function profileRelationsByOthers()
+  {
+      return $this->hasMany('App\Models\ProfileRelation', 'related_profile_id');
   }
 
   public function lastFileSortValue()

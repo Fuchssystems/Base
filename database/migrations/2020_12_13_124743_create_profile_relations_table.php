@@ -18,6 +18,7 @@ class CreateProfileRelationsTable extends Migration
           $table->bigInteger('profile_id');
           $table->index('profile_id');
           $table->bigInteger('related_profile_id');
+          $table->index('related_profile_id');
           $table->string('index_profile_and_related', 18);
           $table->index('index_profile_and_related');
           $table->boolean('has_unread_messages');
