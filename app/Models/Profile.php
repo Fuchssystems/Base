@@ -17,6 +17,7 @@ class Profile extends Model
 
   protected $appends = ['ageYears', 'distance'];
   protected $guarded = [];
+  protected $withCount =['unreadMessages'];
 
   protected static function boot ()
   {
@@ -106,5 +107,15 @@ class Profile extends Model
   public function sessions()
   {
     return $this->hasMany('App\Models\Session');
+  }
+
+  public function unreadMessages()
+  {
+    return $this->hasMany('App\Models\Chatmessage', 'profile_id_receiver')->where('read', '=', 0);
+  }
+
+  public function unreadMessagesAsSender()
+  {
+    return $this->hasMany('App\Models\Chatmessage', 'profile_id_sender')->where('read', '=', 0);
   }
 }

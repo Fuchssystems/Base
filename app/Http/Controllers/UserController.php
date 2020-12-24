@@ -41,7 +41,7 @@ class UserController extends Controller
                 'user' => Auth::user(),
                 'token' => Auth::user()->createToken('bigStore')->accessToken,
                 'session' => $session,
-                'profiles' => Auth::user()->profiles,
+                'profiles' => Auth::user()->profilesWithUnreadMessagesCount,
                 'file' => $user->activeProfile->profileImage,
             ];
 

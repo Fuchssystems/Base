@@ -37,6 +37,11 @@ class User extends Authenticatable
       return $this->hasMany('App\Models\Profile');
     }
 
+    public function profilesWithUnreadMessagesCount()
+    {
+      return $this->hasMany('App\Models\Profile')->with('unreadMessages');
+    }
+
     public function activeProfile()
     {
       return $this->hasOne('App\Models\Profile', 'id', 'active_profile_id');

@@ -70,15 +70,17 @@ class PusherMessages
 
     // broadcast new chatmessage to online receiver
    public static function broadcastNewChatmessage ($profileIdSender, $profileIdReceiver,
-    $chatmessage, $unreadMessageCounter) {
+    $chatmessage, $relation_unread_messages_count) {
+      $senderProfile = Profile::find($profileIdSender);
       $receiverProfile = Profile::find($profileIdReceiver);
-      if ($receiverProfile) {
+      if ($senderProfile && $receiverProfile) {
         if ($receiverProfile->online) {
           $message = (object) [
             'type' => 'newChatmessage',
-            'profileId' => $profileIdSender,
+            'senderProfile' => $senderProfile,
             'chatmessage' => $chatmessage,
-            'unreadMessagecounter' => $unreadMessageCounter,
+            'unreadMessagecounter' => $receiverProfile->unread_messages_count,
+            'relation_unread_messages_count' => $relation_unread_messages_count,
           ];
           broadcast(new MessageToProfile($profileIdReceiver, $message));
         }

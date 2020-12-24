@@ -19,6 +19,7 @@ class CreateChatmessagesTable extends Migration
             $table->index('profile_index_sender_receiver');
             $table->bigInteger('profile_id_sender');
             $table->bigInteger('profile_id_receiver');
+            $table->index('profile_id_receiver');
             $table->text('messageText');
             $table->dateTime('send_at')->nullable(true);
             $table->boolean('read')->nullable(true);

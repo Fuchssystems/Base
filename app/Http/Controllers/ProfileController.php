@@ -54,6 +54,10 @@ class ProfileController extends Controller
         });
       }
 
+      if ($data['mode'] === 'messages') {
+        $query->has('unreadMessagesAsSender');
+      }
+
       if ($data['mode'] === 'profiles') {
         // min und max age
         if(isset($data['minAge']) && isset($data['maxAge'])) {
@@ -77,16 +81,16 @@ class ProfileController extends Controller
               $query->whereIn('gender_male_female_diverse_null', $data['genders']);
           }
         }
+
+        if(isset($data['distance'])) {
+          $activeLatitude = $activeUserProfile->latitude;
+          $activeLongitude = $activeUserProfile->longitude;
+          $query->whereRaw("111.045*haversine(latitude, longitude, '{$activeLatitude}', '{$activeLongitude}') <= " . $data['distance']);
+        }
       }
 
       // exclude active profile
       $query->where('id', '<>', $activeUserProfile->id);
-
-      $activeLatitude = $activeUserProfile->latitude;
-      $activeLongitude = $activeUserProfile->longitude;
-      if(isset($data['distance'])) {
-        $query->whereRaw("111.045*haversine(latitude, longitude, '{$activeLatitude}', '{$activeLongitude}') <= " . $data['distance']);
-      }
 
       $query->orderBy('name', 'asc');
 
@@ -98,12 +102,12 @@ class ProfileController extends Controller
       // add fields is_contact, unread_messages_counter
       $profiles->map(function ($profile) use ($activeUserProfile) {
         $profile['is_contact'] = false;
-        $profile['unread_messages_counter'] = 0;
+        $profile['relation_unread_messages_count'] = 0;
         $index = ProfileRelation::make_index_profile_and_related($activeUserProfile->id, $profile->id);
         $profileRelation = ProfileRelation::where('index_profile_and_related', $index)->first();
         if ($profileRelation) {
           $profile['is_contact'] = $profileRelation->is_contact;
-          $profile['unread_messages_counter'] = $profileRelation->unread_messages_counter;
+          $profile['relation_unread_messages_count'] = $profileRelation->relation_unread_messages_count;
         }
       });
 
@@ -135,6 +139,7 @@ class ProfileController extends Controller
 
       return response()->json([
         'profiles' => $profiles,
+        'receiverProfile_unread_messages_count' => $activeUserProfile->unread_messages_count,
       ]);
     }
 }

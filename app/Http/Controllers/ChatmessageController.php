@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chatmessage;
+use App\Models\Profile;
 use App\Models\ProfileRelation;
 use App\ownFunctionClasses\PusherMessages;
 
@@ -57,8 +58,6 @@ class ChatmessageController extends Controller
           $profileRelation->profile_id = $data['profileIdSender'];
           $profileRelation->related_profile_id = $data['profileIdReceiver'];
           $profileRelation->is_contact = true;
-          $profileRelation->has_unread_messages = false;
-          $profileRelation->unread_messages_counter = 0;
           $profileRelation->save();
         }
 
@@ -70,16 +69,12 @@ class ChatmessageController extends Controller
           $profileRelation->profile_id = $data['profileIdReceiver'];
           $profileRelation->related_profile_id = $data['profileIdSender'];
           $profileRelation->is_contact = true;
-          $profileRelation->has_unread_messages = false;
-          $profileRelation->unread_messages_counter = 0;
         }
-        $profileRelation->has_unread_messages = true;
-        $profileRelation->unread_messages_counter++;
         $profileRelation->save();
 
         dispatch(function () use ($data, $chatmessage, $profileRelation) {
           PusherMessages::broadcastNewChatmessage($data['profileIdSender'], $data['profileIdReceiver'],
-            $chatmessage, $profileRelation->unread_messages_counter
+            $chatmessage, $profileRelation->relationUnreadMessages()
           );
         })->afterResponse();
 
@@ -109,33 +104,27 @@ class ChatmessageController extends Controller
       ->orderBy('send_at', 'asc')->get();
 
     // set read status of messages to read
-    // update profile unread messages counter
     $now = Carbon::now()->toDateTimeString();
     $index = ProfileRelation::make_index_profile_and_related($data['profileIdSender'], $data['profileIdReceiver']);
-    $profileRelation = ProfileRelation::where('index_profile_and_related', $index)->first();
-    $updateProfileRelation = false;
-    if ($profileRelation) {
-      foreach($chatmessages as $chatmessage) {
-        if (!$chatmessage->read) {
-          $chatmessage->read = true;
-          $chatmessage->read_at = $now;
-          $chatmessage->save();
-
-          $profileRelation->unread_messages_counter--;
-          if ($profileRelation->unread_messages_counter <= 0) {
-            $profileRelation->has_unread_messages = false;
-          }
-          $updateProfileRelation = true;
-        }
-      };
-      if ($updateProfileRelation) {
-        $profileRelation->save();
+    foreach($chatmessages as $chatmessage) {
+      // $data['profileIdSender'] is from reading profile
+      if (($chatmessage->profile_id_receiver === $data['profileIdSender']) && !$chatmessage->read) {
+        $chatmessage->read = true;
+        $chatmessage->read_at = $now;
+        $chatmessage->save();
       }
-    }
+      };
+    
+    $profileRelation = ProfileRelation::where('index_profile_and_related', $index)->first();
+
+    $receiverProfile = Profile::find($data['profileIdReceiver']);
+    $receiverProfile_unread_messages_count = $receiverProfile
+      ? $receiverProfile->unread_messages_count : 0;
 
     return response()->json([
       'chatmessages' => $chatmessages,
       'profileRelation' => $profileRelation,
+      'receiverProfile_unread_messages_count' => $receiverProfile_unread_messages_count,
     ]);
  }
  
@@ -154,26 +143,25 @@ class ChatmessageController extends Controller
 
     // set read status of messages to read
     $chatmessage = Chatmessage::find($data['chatMessageId']);
-    if ($chatmessage) {
-      $chatmessage->read = true;
-      $chatmessage->read_at = Carbon::now()->toDateTimeString();
-      $chatmessage->save();
+    if (!$chatmessage) {
+      return response()->json(['error' => 'Chatmessage not found. id: ' . $data['chatMessageId']], 401);
     }
+    $chatmessage->read = true;
+    $chatmessage->read_at = Carbon::now()->toDateTimeString();
+    $chatmessage->save();
 
-    // update profile unread messages counter
-    $index = ProfileRelation::make_index_profile_and_related($chatmessage->profile_id_receiver, $chatmessage->profile_id_sender);
-    $profileRelation = ProfileRelation::where('index_profile_and_related', $index)->first();
-    if ($profileRelation) {
-      $profileRelation->unread_messages_counter--;
-      if ($profileRelation->unread_messages_counter <= 0) {
-        $profileRelation->has_unread_messages = false;
-      }
-      $profileRelation->save();
-    }
+    $receiverProfile = Profile::find($chatmessage->profile_id_receiver);
+    $receiverProfile_unread_messages_count = $receiverProfile
+      ? $receiverProfile->unread_messages_count : 0;
 
-    // return updated chatmessages
+    $index = ProfileRelation::make_index_profile_and_related($chatmessage->profile_id_sender, $chatmessage->profile_id_receiver);
+    $profileRelation = ProfileRelation::where('index_profile_and_related', $index)->first();  
+
+    // return updated chatmessages and relation unread messages counter
     return response()->json([
       'chatmessage' => $chatmessage,
+      'receiverProfile_unread_messages_count' => $receiverProfile_unread_messages_count,
+      'profileRelation' => $profileRelation,
     ]);
   }
 

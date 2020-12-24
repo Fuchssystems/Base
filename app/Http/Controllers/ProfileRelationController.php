@@ -30,8 +30,6 @@ class ProfileRelationController extends Controller
         $profileRelation->profile_id = $fields_profileRelation['profile_id'];
         $profileRelation->related_profile_id = $fields_profileRelation['related_profile_id'];
         $profileRelation->is_contact = false;
-        $profileRelation->has_unread_messages = false;
-        $profileRelation->unread_messages_counter = 0;
         $profileRelation->save();
       }
       if (isset($fields_profileRelation['is_contact'])) $profileRelation->is_contact = $fields_profileRelation['is_contact'];
