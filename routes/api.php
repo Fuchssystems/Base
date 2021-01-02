@@ -20,6 +20,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ChatmessageController;
 use App\Http\Controllers\ProfileRelationController;
+use App\Http\Controllers\CallController;
 
 Route::group(['middleware' => []], function () {
   Route::put('login', [UserController::class, 'login']);
@@ -43,9 +44,12 @@ Route::group(['middleware' => ['auth:api']], function () {
   Route::put('getUserPayments', [PaymentController::class, 'getUserPayments']);
   Route::put('newUserPayment', [PaymentController::class, 'newUserPayment']);
   Route::put('chatProfileSearch', [ProfileController::class, 'chatProfileSearch']);
+  Route::put('chatGet1Profile', [ProfileController::class, 'chatGet1Profile']);
   Route::put('chatmessagePost', [ChatmessageController::class, 'chatmessagePost']);
   Route::put('getProfileChatmessages', [ChatmessageController::class, 'getProfileChatmessages']);
   Route::put('confirmChatmessageRead', [ChatmessageController::class, 'confirmChatmessageRead']);
   Route::put('updateProfileRelation', [ProfileRelationController::class, 'update']);  
+  Route::put('videochatRequestNewCall', [CallController::class, 'requestNewCall']);  
+  Route::put('videochatUpdateCallStatus', [CallController::class, 'updateCallStatus']);  
 });
 

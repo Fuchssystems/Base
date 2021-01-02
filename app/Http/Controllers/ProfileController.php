@@ -142,4 +142,44 @@ class ProfileController extends Controller
         'receiverProfile_unread_messages_count' => $activeUserProfile->unread_messages_count,
       ]);
     }
+
+    // get 1 profile (other videochatProfile)
+    public function chatGet1Profile(Request $request)
+    {
+      $data = $request->all();
+
+      $validator = Validator::make($data, [
+        'id' => 'required|integer|exists:profiles',
+      ]);
+  
+      if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 401);
+      }
+  
+      $user = Auth::user();
+      $activeUserProfile = $user->activeProfile;
+
+      $query = Profile::with(['profileImage'])->where('id', $data['id']);
+
+      Paginator::currentPageResolver(function() {
+        return 1; // page 1
+      });
+      $profiles = $query->paginate(100);
+
+      // add fields is_contact, unread_messages_counter
+      $profiles->map(function ($profile) use ($activeUserProfile) {
+        $profile['is_contact'] = false;
+        $profile['relation_unread_messages_count'] = 0;
+        $index = ProfileRelation::make_index_profile_and_related($activeUserProfile->id, $profile->id);
+        $profileRelation = ProfileRelation::where('index_profile_and_related', $index)->first();
+        if ($profileRelation) {
+          $profile['is_contact'] = $profileRelation->is_contact;
+          $profile['relation_unread_messages_count'] = $profileRelation->relation_unread_messages_count;
+        }
+      });
+
+      return response()->json([
+        'profiles' => $profiles,
+      ]);
+    }
 }

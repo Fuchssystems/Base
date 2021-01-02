@@ -96,4 +96,23 @@ class PusherMessages
       ];
       broadcast(new MessageToProfile($profileIdReceiver, $message));
     }
+
+    // videochat
+    // send updated call to caller profile
+    public static function broadcastCallUpdateToCaller ($call) {
+      $message = (object) [
+        'type' => 'updateCall',
+        'call' => $call,
+      ];
+      broadcast(new MessageToProfile($call->profile_id_caller, $message));
+   }
+
+    // send updated call to receiver profile
+    public static function broadcastCallUpdateToReceiver ($call) {
+      $message = (object) [
+        'type' => 'updateCall',
+        'call' => $call,
+      ];
+      broadcast(new MessageToProfile($call->profile_id_receiver, $message));
+   }
 }
