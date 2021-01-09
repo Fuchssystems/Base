@@ -51,9 +51,9 @@ class CallController extends Controller
       // signal receiver about new call
       PusherMessages::broadcastCallUpdateToReceiver($call);
 
-      // wait 20 sec and check if receiver answered the call
+      // wait 30 sec and check if receiver answered the call
       // if not notify the caller that call was not anwered
-      sleep(20);
+      sleep(30);
       $call->refresh();
       if(($call->status === 'newCallRequested') || ($call->status === 'isRinging')) {
         $call->status = 'receiverDidNotAnswer';
