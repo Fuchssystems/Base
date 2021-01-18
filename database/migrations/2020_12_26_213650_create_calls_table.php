@@ -17,6 +17,7 @@ class CreateCallsTable extends Migration
             $table->id();
             $table->bigInteger('profile_id_caller');
             $table->bigInteger('profile_id_receiver');
+            $table->bigInteger('session_id_receiver')->nullable();
             $table->string('profile_name_receiver', 20);
             $table->string('status', 20);
             $table->bigInteger('last_log_id')->nullable();

@@ -85,7 +85,8 @@ class CallController extends Controller
 
     $validator = Validator::make($data, [
       'id' => 'required|integer|exists:calls',
-      'status' => 'required|string'
+      'status' => 'required|string',
+      'sessionIdReceiver' => 'sometimes|integer|nullable',
     ]);
 
     if ($validator->fails()) {
@@ -97,6 +98,9 @@ class CallController extends Controller
     // do not notify other profile if answer already timed out
     if (!($old_callStatus === 'receiverDidNotAnswer')) {
       $call->status = $data['status'];
+      if (isset($data['sessionIdReceiver'])) {
+        $call->session_id_receiver = $data['sessionIdReceiver'];
+      }
       $call->save();
 
       // create new log call
