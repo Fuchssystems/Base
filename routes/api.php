@@ -21,13 +21,21 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ChatmessageController;
 use App\Http\Controllers\ProfileRelationController;
 use App\Http\Controllers\CallController;
+use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\TemporaryPasswordController;
+use App\Http\Controllers\TestEmailController;
 
 Route::group(['middleware' => []], function () {
   Route::put('login', [UserController::class, 'login']);
   Route::put('register', [UserController::class, 'register']);
   Route::put('createWebuser', [UserController::class, 'createWebuser']);
+  Route::put('resendConfirmationEmail', [UserController::class, 'resendVerificationEmail']);
   Route::patch('userPreferences',[UserController::class, 'updatePreferencesUnauthorized']);
   Route::put('whisper', [ChatmessageController::class, 'whisper']);
+  Route::put('emailVerification', [EmailVerificationController::class, 'handleEmailVerificationLink']);
+  Route::put('requestSecurityQuestion', [TemporaryPasswordController::class, 'requestSecurityQuestion']);
+  Route::put('requestTemporaryPassword', [TemporaryPasswordController::class, 'requestTemporaryPassword']);
+  Route::put('sendTestEmail', [TestEmailController::class, 'sendTestEmail']);
 });
 Route::group(['middleware' => ['auth:api']], function () {
   Route::put('alive', [UserController::class, 'alive']);
@@ -35,6 +43,7 @@ Route::group(['middleware' => ['auth:api']], function () {
   Route::patch('user',[UserController::class, 'update']);
   Route::put('deleteWebuser',[UserController::class, 'delete']);
   Route::put('logout', [UserController::class, 'logout']);
+  Route::put('resendVerificationEmail', [UserController::class, 'resendVerificationEmail']);
   Route::put('addFileProfile', [FileController::class, 'addPicture']);
   Route::put('getAllProfileFiles', [FileController::class, 'getAllProfileFiles']);
   Route::put('loadFile', [FileController::class, 'loadFile']);

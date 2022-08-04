@@ -8,16 +8,27 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\HasApiTokens;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasLocalePreference
 {
     use HasFactory, Notifiable, SoftDeletes, HasApiTokens;
 
     protected $guarded = [];
 
     protected $hidden = [
-        'password', 'remember_token',
+      'password',
+      'remember_token',
+      'security_question_key',
+      'answer_security_question',
+      'wrong_answers_counter_security_question',
+      'last_date_wrong_answer_security_question',
     ];
+
+    public function preferredLocale()
+    {
+        return substr($this->language, 0, 2);
+    }
 
     protected $casts = [
       'preferences' => 'array', // column type json
@@ -29,6 +40,7 @@ class User extends Authenticatable
         
         self::deleting(function (User $user) {
             foreach ($user->profiles as $profile) $profile->delete();
+            foreach ($user->verification_emails as $verification_email) $verification_email->delete();
         });
     }
 
@@ -52,4 +64,8 @@ class User extends Authenticatable
       return $this->hasMany('App\Models\Payment')->whereIn('transaction_status', ['COMPLETED'])->orderBy('received_at_dateTime', 'DESC');
     }
 
+    public function verification_emails()
+    {
+      return $this->hasMany('App\Models\Verification_email');
+    }
 }

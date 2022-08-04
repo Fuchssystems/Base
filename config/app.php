@@ -1,6 +1,14 @@
 <?php
 
 return [
+    // own environment variables set in .env
+    'baseURL' => env('BASE_URL'),
+    'emailSendAllToAddress' => env('EMAIL_SEND_ALL_TO_ADDRESS'),
+    'emailVerification' => env('FEATURE_EMAIL_VERIFICATION'),
+    'emailVerificationLifetimeMinutes' => env('EMAIL_VERIFICATION_LIFETIME_MINUTES'),
+    'featureResetPassword' => env('FEATURE_RESET_PASSWORD'),
+    'wrongSecurityQuestionAnswersAllowedBeforePaused' => env('WRONG_SECURITY_QUESTION_ANSWERS_ALLOWED_BEFORE_PAUSED'),
+    'wrongSecurityQuestionPauseAfterTooManyMinutes' => env('WRONG_SECURITY_QUESTION_PAUSE_AFTER_TOO_MANY_MINUTES'),
 
     /*
     |--------------------------------------------------------------------------

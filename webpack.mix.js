@@ -17,6 +17,6 @@ const mix = require('laravel-mix');
 //         //
 //     ]);
 mix
-  .copy('../../Q Base/dist/spa/index.html', 'resources/views/app.blade.php')
-  .copyDirectory('../../Q Base/dist/spa', 'public');
+  .copy('../../Q2 Base/dist/spa/index.html', 'resources/views/app.blade.php')
+  .copyDirectory('../../Q2 Base/dist/spa', 'public');
   

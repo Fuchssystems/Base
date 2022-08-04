@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 use App\ownFunctionClasses\PusherMessages;
+use App\Http\Controllers\EmailVerificationController;
 
 class Kernel extends ConsoleKernel
 {
@@ -27,9 +28,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(new PusherMessages)->everyMinute();
-        // $schedule->call(function () {
-        //   PusherMessages::deleteTimedOutSessions();
-        // })->everyMinute();
+
+        $schedule->call(function () {
+          EmailVerificationController::deleteTimedOutVerificationEmails();
+        })->everyMinute();
     }
 
     /**
